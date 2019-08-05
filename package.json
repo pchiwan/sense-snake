@@ -4,6 +4,7 @@
   "description": "Snake on the sensehat with raspberry pi and resin",
   "main": "src/app.js",
   "scripts": {
+    "webemu": "webemu start --file ./src/app.js --launch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -20,5 +21,8 @@
     "lodash": "^4.17.4",
     "sense-hat-led": "^1.0.1",
     "sense-joystick": "0.0.2"
+  },
+  "devDependencies": {
+    "sense-hat-web-emu": "^2.0.3"
   }
 }
