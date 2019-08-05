@@ -1,7 +1,8 @@
-const senseJoystick = require('sense-joystick');
-const senseLeds = require('sense-hat-led');
 const _ = require('lodash');
 const lodash = _;
+let senseJoystick = null;
+let senseLeds = null;
+
 
 // The delay between calling our tick function. This also handles the snake
 // moving so it should not be too quick
@@ -12,10 +13,8 @@ var tickDelay = tickDelayStart;
 const WIDTH = 8;
 const HEIGHT = 8;
 
-// const snakeColour = [0, 255, 0];
-const snakeColour = [0, 255, 255];
-//const headColour = [137, 172, 163];
-const headColour = [0, 172, 163];
+const snakeColour = [0, 255, 0];
+const headColour = [137, 172, 163];
 const black = [0, 0, 0];
 const red = [255, 0, 0];
 const foodColour = [255, 127, 0];
@@ -201,29 +200,6 @@ const setNewFoodPos = () => {
 	}
 };
 
-// Setup input callbacks
-senseJoystick.getJoystick()
-.then((joystick) => {
-	joystick.on('press', (val) => {
-		if (val === 'click') {
-			if (lastDirection === 'stop') {
-				currentMaze = (currentMaze + 1) % mazeOptions.length;
-				restartGame();
-			}
-			else {
-				pauseGame();
-				snake.colour = [_.random(40, 255), _.random(40, 255), _.random(40, 255)];
-			}
-		} else {
-			unpauseGame()
-			let currentDir = _.last(nextDirection) || lastDirection;
-			if (val !== currentDir && val !== oppositeDirection(currentDir)) {
-				nextDirection.push(val);
-			}
-		}
-	});
-});
-
 // This function is the brains of our snake game. It will be called periodically
 // and update the internal models of the snake and the game, and also will update
 // the screen.
@@ -256,7 +232,8 @@ const tick = () => {
 
 			setTimeout(() => {
 				clearScreen();
-				senseLeds.showMessage(` ${snake.size - 2} ${snake.size - 2}`, () => {
+				senseLeds.showMessage(`${snake.size - 2} ${snake.size - 2}`)
+				.then(() => {
 					setTimeout(restartGame, 500);
 				});
 			}, 800);
@@ -306,4 +283,32 @@ const stopGameLoop = () => {
 	clearInterval(timerHandle);
 }
 
-restartGame();
+module.exports = function (_senseJoystick, _senseLeds) {
+	senseJoystick = _senseJoystick;
+	senseLeds = _senseLeds;
+
+	// Setup input callbacks
+	senseJoystick.getJoystick()
+	.then((joystick) => {
+		joystick.on('press', (val) => {
+			if (val === 'click') {
+				if (lastDirection === 'stop') {
+					currentMaze = (currentMaze + 1) % mazeOptions.length;
+					restartGame();
+				}
+				else {
+					pauseGame();
+					snake.colour = [_.random(40, 255), _.random(40, 255), _.random(40, 255)];
+				}
+			} else {
+				unpauseGame()
+				let currentDir = _.last(nextDirection) || lastDirection;
+				if (val !== currentDir && val !== oppositeDirection(currentDir)) {
+					nextDirection.push(val);
+				}
+			}
+		});
+	});
+
+	restartGame();
+}
